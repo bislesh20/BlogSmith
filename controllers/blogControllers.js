@@ -1,5 +1,5 @@
-const { Blog } = require("../models/blog");
-const { Comment } = require("../models/comments");
+const Blog = require("../models/blog");
+const Comment = require("../models/comments");
 
 async function handleAddNewBlog(req, res) {
   try {

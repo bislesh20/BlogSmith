@@ -6,7 +6,7 @@ const userRoute = require("./routes/user");
 const blogRoute = require("./routes/blog");
 const User = require("./models/user");
 const cookieParser = require("cookie-parser");
-const { Blog } = require("./models/blog");
+const Blog = require("./models/blog");
 const { checkForAuthenticationCookie } = require("./middlewares/auth");
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -14,7 +14,8 @@ const PORT = process.env.PORT || 8000;
 // connection with MongoDB
 mongoose
   .connect(process.env.MONGO_URL)
-  .then((e) => console.log("MongoDB Connected..."));
+  .then(() => console.log("MongoDB Connected..."))
+  .catch((err) => console.log("MongoDB not connected..."));
 // middleware
 app.set("view engine", "ejs");
 app.set("views", path.resolve("./views"));
@@ -24,6 +25,11 @@ app.use(checkForAuthenticationCookie("token"));
 app.use(express.static(path.resolve("./public")));
 app.use(express.json());
 
+app.use((req, res, next) => {
+  res.locals.user = req.user || null; // available in ALL views
+  next();
+});
+
 app.get("/", async (req, res) => {
   const allBlogs = await Blog.find({});
   res.render("home", {
@@ -31,8 +37,9 @@ app.get("/", async (req, res) => {
     blogs: allBlogs,
   });
 });
-app.use("/user", userRoute);
-app.use("/blog", blogRoute);
+
+app.use("/user", userRoute); // handles userRoutes
+app.use("/blog", blogRoute); // handles blogRoutes
 
 app.listen(PORT, () => {
   console.log(`Server Listening on Port ${PORT}...`);

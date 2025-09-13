@@ -1,8 +1,8 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { createTokenForUser, validateToken } = require("../services/auth");
-const JWT_SECRET = "passkey";
+const { createTokenForUser } = require("../services/auth");
+const JWT_SECRET = process.env.JWT_SECRET;
 
 async function handleSignUp(req, res) {
   const { fullName, email, password } = req.body;
@@ -10,12 +10,16 @@ async function handleSignUp(req, res) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ fullName, email, password: hashedPassword });
     await newUser.save();
+
+    // 🔹 Create JWT for new user
     const token = jwt.sign({ userId: newUser._id }, JWT_SECRET, {
       expiresIn: "1h",
     });
-    return res.redirect("/");
+
+    // 🔹 Set cookie and redirect (auto login)
+    return res.cookie("token", token).redirect("/");
   } catch (err) {
-    res.render("signup", { err: "SignUp Failed" });
+    res.render("signup", { err: "SignUp Failed", user: null });
   }
 }
 

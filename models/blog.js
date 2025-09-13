@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
-const { applyTimestamps } = require("./user");
 const Schema = mongoose.Schema;
-const model = mongoose.model;
 const blogSchema = new Schema(
   {
     title: {
@@ -24,4 +22,4 @@ const blogSchema = new Schema(
   { timestamps: true }
 );
 const Blog = mongoose.model("blog", blogSchema);
-module.exports = { Blog };
+module.exports = Blog;
